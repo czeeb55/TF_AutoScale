@@ -2,4 +2,8 @@ aws_access_key = ""
 
 aws_secret_key = ""
 
+# Name of AWS Keypair to be used as SSH keys for EC2 instances
 aws_keypair_name = "" 
+
+# Your IP in CIDR format (ex: 123.456.789.1/24)
+my_ip = "" 
