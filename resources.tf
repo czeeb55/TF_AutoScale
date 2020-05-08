@@ -12,7 +12,7 @@ resource "aws_security_group" "allow_ssh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
+    cidr_blocks = [var.my_ip] # Locking down SSH to only my home IP
   }
   ingress {
     from_port   = 80
@@ -53,8 +53,8 @@ resource "aws_elb" "nginx-elb" {
   }
 }
 
-resource "aws_launch_configuration" "NginxLaunchConfig" {
-  name_prefix   = "Flan"
+resource "aws_launch_configuration" "NGINXLaunchConfig" {
+  name   = "NGINX"
   image_id      = data.aws_ami.aws-linux.id
   instance_type = "t2.micro"
 
@@ -69,7 +69,7 @@ resource "aws_autoscaling_group" "CZs_Autoscaled_NGINX" {
   desired_capacity   = 2
   max_size           = 3
   min_size           = 2
-  launch_configuration = aws_launch_configuration.NginxLaunchConfig.id
+  launch_configuration = aws_launch_configuration.NGINXLaunchConfig.id
   load_balancers = [aws_elb.nginx-elb.name]
   #tags = merge(local.tags, {propagate_at_launch = true})
   tag {
