@@ -17,6 +17,8 @@ provider "aws" {
 }
 
 # Locals
+# Attempted to create a map of tags that'd be applied to everything but ran into issues
+# Moved back to setting tags per resource
 /*
 locals{
     tags = {
@@ -27,7 +29,6 @@ locals{
 */
 
 # Output
-# Output Site IP/DNS Name Here
 output "aws_elb_public_dns" {
     value = aws_elb.nginx-elb.dns_name
   }
