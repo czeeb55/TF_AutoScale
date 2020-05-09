@@ -1,12 +1,38 @@
 # Resources
+/*
 resource "aws_default_vpc" "default" {
 
 }
+*/
+/*
+resource aws_vpc "NGINXVPC" {
+    cidr_block = "10.0.0.0/16"
+
+    tags = {
+        name = "CZs_Autoscaled_Nginx"
+    }
+}
+*/
+
+module "vpc" {
+    source = "terraform-aws-modules/vpc/aws"
+    name = "NGINX-VPC"
+
+    cidr = "10.0.0.0/16"
+    azs = data.aws_availability_zones.available.names
+    public_subnets = data.template_file.public_cidrsubnet[*].rendered
+    private_subnets = []
+
+    tags = {
+        name = "CZs_Autoscaled_Nginx"
+    }
+}
+
 
 resource "aws_security_group" "allow_ssh" {
   name        = "nginxSSH"
   description = "Open SSH for EC2 instances, HTTP"
-  vpc_id      = aws_default_vpc.default.id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 22
@@ -30,7 +56,10 @@ resource "aws_security_group" "allow_ssh" {
 
 resource "aws_elb" "nginx-elb" {
   name = "CZ-NGINX-ELB"
-  availability_zones = data.aws_availability_zones.available.names
+  #availability_zones = data.aws_availability_zones.available.names
+  security_groups = [aws_security_group.allow_ssh.id]
+  subnets = module.vpc.public_subnets
+  #instances = aws_autoscaling_group.CZs_Autoscaled_NGINX.instances.id
 
   listener {
     instance_port     = 80
@@ -65,12 +94,12 @@ resource "aws_launch_configuration" "NGINXLaunchConfig" {
 }
 
 resource "aws_autoscaling_group" "CZs_Autoscaled_NGINX" {
-  availability_zones = data.aws_availability_zones.available.names
   desired_capacity   = 2
   max_size           = 3
   min_size           = 2
   launch_configuration = aws_launch_configuration.NGINXLaunchConfig.id
   load_balancers = [aws_elb.nginx-elb.name]
+  vpc_zone_identifier = module.vpc.public_subnets
   #tags = merge(local.tags, {propagate_at_launch = true})
   tag {
       key = "Name"
