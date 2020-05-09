@@ -22,3 +22,14 @@ data "aws_ami" "aws-linux" {
     values = ["hvm"]
   }
 }
+
+data "template_file" "public_cidrsubnet" {
+  count = 1
+
+  template = "$${cidrsubnet(vpc_cidr,8,current_count)}"
+
+  vars = {
+    vpc_cidr      = "10.0.0.0/16"
+    current_count = count.index
+  }
+}
