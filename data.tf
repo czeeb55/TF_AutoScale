@@ -22,7 +22,8 @@ data "aws_ami" "aws-linux" {
     values = ["hvm"]
   }
 }
-
+# Helps format for multiple subnets/address spaces
+# Used for the VPC creation
 data "template_file" "public_cidrsubnet" {
   count = 1
 
